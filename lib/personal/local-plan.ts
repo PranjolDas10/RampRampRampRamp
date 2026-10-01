@@ -15,8 +15,12 @@ export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 REPO="${repoPath}"
 
 open -a "Visual Studio Code" "$REPO"
-open "${DEEP_FOCUS}"
-osascript -e 'tell application "Spotify" to play track "${DEEP_FOCUS}"' 2>/dev/null
+
+# Spotify: launch it, wait until it's actually running, then start the playlist.
+open -a Spotify
+for i in {1..20}; do pgrep -x Spotify >/dev/null && break; sleep 0.5; done
+sleep 2
+osascript -e 'tell application "Spotify" to play track "${DEEP_FOCUS}"' >/dev/null 2>&1 || open "${DEEP_FOCUS}"
 
 # Start the dev server only if it isn't already running, then wait for it.
 if ! curl -s -o /dev/null --max-time 2 http://localhost:3000; then
@@ -25,7 +29,8 @@ if ! curl -s -o /dev/null --max-time 2 http://localhost:3000; then
 fi
 
 open "http://localhost:3000/ledgerline"
-open -g "rectangle://execute-action?name=left-half" 2>/dev/null
+open -g "rectangle://execute-action?name=left-half" >/dev/null 2>&1
+exit 0
 `;
 }
 

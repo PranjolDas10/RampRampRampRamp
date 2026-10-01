@@ -206,8 +206,8 @@ function WorkflowCard({
               <li className="flex gap-2">
                 <span className="text-ash">3</span>
                 <span>
-                  Add <b className="font-normal underline">Run Shell Script</b>, paste, name it “{SHORTCUT_NAME}”. Allow scripts in Shortcuts →
-                  Settings → Advanced.
+                  Add <b className="font-normal underline">Run AppleScript</b>, replace its text with the paste, name it “{SHORTCUT_NAME}”.
+                  Allow scripts in Shortcuts → Settings → Advanced.
                 </span>
               </li>
             </ol>

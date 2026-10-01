@@ -7,30 +7,39 @@ export const SHORTCUT_RUN_URL = `shortcuts://run-shortcut?name=${encodeURICompon
 export const SHORTCUT_CREATE_URL = "shortcuts://create-shortcut";
 const DEEP_FOCUS = "spotify:playlist:37i9dQZF1DWZeKCadgRdKQ";
 
-// Pasted into a "Run Shell Script" action. Shortcuts runs it with a minimal PATH, so add the
-// usual Homebrew and /usr/local locations for npm.
+// Pasted into a "Run AppleScript" action. (Shortcuts' "Run Shell Script" runs in a context that
+// can't launch or control apps, so app control happens in AppleScript; the shell is only used for
+// the headless dev-server check.)
 export function shortcutScript(repoPath: string) {
-  return `# ${SHORTCUT_NAME} · cl1ck (Platform team template)
-export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
-REPO="${repoPath}"
+  return `-- ${SHORTCUT_NAME} · cl1ck (Platform team template)
+set repo to "${repoPath}"
 
-open -a "Visual Studio Code" "$REPO"
+-- VS Code on this repo
+tell application "Visual Studio Code"
+	activate
+	open (POSIX file repo)
+end tell
 
-# Spotify: launch it, wait until it's actually running, then start the playlist.
-open -a Spotify
-for i in {1..20}; do pgrep -x Spotify >/dev/null && break; sleep 0.5; done
-sleep 2
-osascript -e 'tell application "Spotify" to play track "${DEEP_FOCUS}"' >/dev/null 2>&1 || open "${DEEP_FOCUS}"
+-- Spotify: start Deep Focus
+tell application "Spotify"
+	activate
+	delay 2
+	play track "${DEEP_FOCUS}"
+end tell
 
-# Start the dev server only if it isn't already running, then wait for it.
-if ! curl -s -o /dev/null --max-time 2 http://localhost:3000; then
-  cd "$REPO" && nohup npm run dev > /tmp/cl1ck-dev.log 2>&1 &
-  for i in {1..30}; do curl -s -o /dev/null --max-time 1 http://localhost:3000 && break; sleep 1; done
-fi
+-- Dev server: start it only if it isn't already up
+try
+	do shell script "curl -s -o /dev/null --max-time 2 http://localhost:3000"
+on error
+	do shell script "cd " & quoted form of repo & " && export PATH=/usr/local/bin:/opt/homebrew/bin:$PATH && nohup npm run dev > /tmp/cl1ck-dev.log 2>&1 &"
+	delay 8
+end try
 
-open "http://localhost:3000/ledgerline"
-open -g "rectangle://execute-action?name=left-half" >/dev/null 2>&1
-exit 0
+-- Tabs and window layout
+open location "http://localhost:3000/ledgerline"
+try
+	open location "rectangle://execute-action?name=left-half"
+end try
 `;
 }
 

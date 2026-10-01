@@ -1,0 +1,202 @@
+/* Ledgerline: a deliberately dated enterprise accounting UI. Scoped under .ll. */
+.ll {
+  --ll-bg: #d4d0c8;
+  --ll-panel: #ece9d8;
+  --ll-white: #ffffff;
+  --ll-border: #7f9db9;
+  --ll-dark: #404040;
+  --ll-blue: #0a246a;
+  --ll-blue2: #3a6ea5;
+  --ll-link: #0000cc;
+  --ll-sel: #316ac5;
+  min-height: 100vh;
+  background: var(--ll-bg);
+  color: #000;
+  font-family: Verdana, Tahoma, "Segoe UI", sans-serif;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+}
+.ll * { box-sizing: border-box; }
+.ll-title {
+  background: linear-gradient(to bottom, #0a246a, #3a6ea5);
+  color: #fff;
+  font-weight: bold;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.ll-logo {
+  background: #f5c400;
+  color: #0a246a;
+  font-weight: 900;
+  padding: 0 4px;
+  border: 1px solid #fff;
+  font-size: 10px;
+}
+.ll-title .ll-right { margin-left: auto; font-weight: normal; font-size: 11px; display: flex; gap: 12px; }
+.ll-title .ll-right a { color: #fff; text-decoration: underline; }
+.ll-menu {
+  background: var(--ll-panel);
+  border-bottom: 1px solid #aca899;
+  display: flex;
+  gap: 14px;
+  padding: 3px 8px;
+}
+.ll-menu span { cursor: default; }
+.ll-menu span:first-letter { text-decoration: underline; }
+.ll-toolbar {
+  background: linear-gradient(to bottom, #fefefe, #e3e1d6);
+  border-bottom: 1px solid #aca899;
+  display: flex;
+  gap: 2px;
+  padding: 3px 6px;
+  align-items: center;
+}
+.ll-tbtn {
+  font: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.ll-tbtn:hover { border-color: #316ac5; background: #c1d2ee; }
+.ll-tbtn .ico { width: 14px; height: 14px; display: inline-block; border: 1px solid #555; background: #fff; font-size: 9px; line-height: 12px; text-align: center; }
+.ll-sep { width: 1px; height: 18px; background: #aca899; margin: 0 4px; }
+.ll-body { display: flex; flex: 1; min-height: 0; }
+.ll-nav {
+  width: 190px;
+  background: var(--ll-white);
+  border-right: 2px solid #aca899;
+  padding: 6px 4px;
+  flex-shrink: 0;
+}
+.ll-nav .grp { font-weight: bold; margin: 6px 0 2px; color: var(--ll-blue); }
+.ll-nav button {
+  font: inherit;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px dotted transparent;
+  padding: 2px 4px 2px 14px;
+  cursor: pointer;
+  color: #000;
+}
+.ll-nav button:hover { text-decoration: underline; }
+.ll-nav button.on { background: var(--ll-sel); color: #fff; border-color: #000; }
+.ll-nav button.dis { color: #808080; cursor: not-allowed; }
+.ll-main { flex: 1; padding: 8px 10px; overflow: auto; min-width: 0; }
+.ll-crumb { color: #333; margin-bottom: 6px; }
+.ll-crumb b { color: var(--ll-blue); }
+.ll-h {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--ll-blue);
+  border-bottom: 2px solid var(--ll-blue2);
+  padding-bottom: 2px;
+  margin: 0 0 8px;
+}
+.ll-box { background: var(--ll-panel); border: 1px solid #919b9c; padding: 8px; margin-bottom: 8px; }
+.ll-grid { width: 100%; border-collapse: collapse; background: #fff; }
+.ll-grid th {
+  background: linear-gradient(to bottom, #fdfdfd, #d8d5c9);
+  border: 1px solid #a0a0a0;
+  text-align: left;
+  padding: 2px 4px;
+  font-weight: normal;
+  white-space: nowrap;
+}
+.ll-grid td { border: 1px solid #d0d0d0; padding: 2px 4px; white-space: nowrap; }
+.ll-grid tr:nth-child(even) td { background: #f3f6fb; }
+.ll-grid tr.click { cursor: pointer; }
+.ll-grid tr.click:hover td { background: #c1d2ee; }
+.ll-grid tr.unread td { font-weight: bold; }
+.ll-grid tr.done td { color: #808080; }
+.ll-btn {
+  font: inherit;
+  background: linear-gradient(to bottom, #ffffff, #e3e1d6);
+  border: 1px solid #003c74;
+  border-radius: 3px;
+  padding: 3px 12px;
+  cursor: pointer;
+  color: #000;
+}
+.ll-btn:hover { background: linear-gradient(to bottom, #fff9e0, #f6d36b); }
+.ll-btn.primary { font-weight: bold; }
+.ll-btn:disabled { color: #999; border-color: #aaa; cursor: not-allowed; }
+.ll-form { display: grid; grid-template-columns: 120px 260px 1fr; gap: 6px 8px; align-items: start; }
+.ll-form label { text-align: right; padding-top: 3px; }
+.ll-form label .req { color: #c00; }
+.ll-form input, .ll-form select, .ll-form textarea {
+  font: inherit;
+  border: 1px solid var(--ll-border);
+  padding: 2px 3px;
+  background: #fff;
+  width: 100%;
+  border-radius: 0;
+}
+.ll-form .hint { color: #666; padding-top: 3px; }
+/* Fields cl1ck filled: its chartreuse highlighter on top of the old UI. */
+.ll-form .ll-auto {
+  background: #fbfde6;
+  border-color: #0c0a08;
+  box-shadow: 0 0 0 2px #e4f222;
+  animation: ll-glow 1.2s ease-out;
+}
+@keyframes ll-glow {
+  0% { box-shadow: 0 0 0 6px #e4f222; background: #f4f9b8; }
+  100% { box-shadow: 0 0 0 2px #e4f222; background: #fbfde6; }
+}
+.ll-tag { color: #0c0a08; font-size: 10px; padding-top: 3px; }
+.ll-err {
+  background: #fff0f0;
+  border: 1px solid #c00;
+  color: #c00;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+}
+.ll-status {
+  background: var(--ll-panel);
+  border-top: 1px solid #aca899;
+  display: flex;
+  gap: 0;
+  font-size: 10px;
+}
+.ll-status span { padding: 2px 8px; border-right: 1px solid #aca899; }
+.ll-doc {
+  background: #fff;
+  border: 1px solid #999;
+  box-shadow: 3px 3px 0 #999;
+  padding: 18px 22px;
+  max-width: 560px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.ll-doc .lh-name { font-size: 16px; font-weight: bold; color: #333; }
+.ll-doc .lh-addr { color: #666; margin-bottom: 10px; }
+.ll-doc .doc-title { font-size: 20px; letter-spacing: 4px; color: #555; margin: 6px 0 10px; }
+.ll-doc .kv span:first-child { color: #555; }
+.ll-doc table { width: 100%; border-collapse: collapse; margin: 10px 0 6px; }
+.ll-doc th { border-bottom: 1px solid #333; text-align: left; font-weight: bold; padding: 2px 4px; }
+.ll-doc td { padding: 2px 4px; border-bottom: 1px dotted #ccc; }
+.ll-doc .total { font-weight: bold; text-align: right; font-size: 13px; }
+.ll-mail-h div { margin-bottom: 2px; }
+.ll-mail-h span:first-child { color: #555; display: inline-block; width: 64px; }
+.ll-pill {
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid #888;
+  background: #ffffe1;
+  font-size: 10px;
+}
+.ll-pill.green { background: #e3edff; border-color: #3a6ea5; color: #0a246a; }
+.ll-pill.amber { background: #fff4d6; border-color: #b7791f; color: #7b4a00; }
+.ll-pill.grey { background: #eee; border-color: #999; color: #666; }
+.ll-pill.blue { background: #e3edff; border-color: #3a6ea5; color: #0a246a; }

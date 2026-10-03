@@ -1,10 +1,5 @@
-import { ClientOnly } from "@/components/client-only";
-import { Dashboard } from "@/components/cl1ck/dashboard";
+import { Landing } from "@/components/landing/landing";
 
 export default function Home() {
-  return (
-    <ClientOnly>
-      <Dashboard />
-    </ClientOnly>
-  );
+  return <Landing />;
 }

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { CLAUDE_MODEL } from "@/lib/claude";
 
 // Natural-language builder: one plain-English sentence becomes a structured rule edit.
 // The client applies it and re-runs the dry run before anything goes live.
@@ -20,21 +21,25 @@ const EditSchema = z.object({
 
 export type RuleEdit = z.infer<typeof EditSchema>;
 
+// Public endpoint that spends the API key: cap the input so one request can't run up the bill.
+const Body = z.object({
+  instruction: z.string().trim().min(1).max(500),
+  threshold: z.number().nonnegative(),
+  vendors: z.array(z.string().max(100)).max(50),
+});
+
 export async function POST(req: Request) {
   const apiKey = process.env.CLAUDE_API_KEY ?? process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return Response.json({ error: "No CLAUDE_API_KEY in .env" }, { status: 500 });
 
-  const { instruction, threshold, vendors } = (await req.json()) as {
-    instruction: string;
-    threshold: number;
-    vendors: string[];
-  };
-  if (!instruction?.trim()) return Response.json({ error: "Empty instruction" }, { status: 400 });
+  const body = Body.safeParse(await req.json().catch(() => null));
+  if (!body.success) return Response.json({ error: "Instruction must be 1-500 characters" }, { status: 400 });
+  const { instruction, threshold, vendors } = body.data;
 
   const client = new Anthropic({ apiKey });
   try {
     const response = await client.messages.parse({
-      model: "claude-opus-5-5",
+      model: CLAUDE_MODEL,
       max_tokens: 2000,
       output_config: { effort: "low", format: zodOutputFormat(EditSchema) },
       system:

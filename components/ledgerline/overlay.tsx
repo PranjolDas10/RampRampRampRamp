@@ -19,7 +19,7 @@ type Props = {
   onDismissToast: (id: string) => void;
 };
 
-// Monochrome per DESIGN.md: the left edge marks the outcome (chartreuse = done, ink = blocked).
+// Monochrome per docs/design.md: the left edge marks the outcome (chartreuse = done, ink = blocked).
 const EDGE: Record<OverlayToast["tone"], string> = {
   ok: "border-l-highlight",
   warn: "border-l-ash",

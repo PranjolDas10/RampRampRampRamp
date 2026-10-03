@@ -21,6 +21,7 @@ import {
 import { resetAll, useStored } from "@/lib/store";
 import type { Run } from "@/lib/types";
 import { DISCOVERY_THRESHOLD, useNow, useCl1ck } from "@/lib/use-cl1ck";
+import { PageIntro } from "@/components/page-intro";
 import { cn } from "@/lib/utils";
 import { GhostButton, Label, Pill, PrimaryButton, Stat, TextButton, useCountUp } from "./bits";
 import { AuditLog, LiveFeed, OrgMap, PersonalSetups, TeamMembers } from "./panels";
@@ -44,7 +45,7 @@ export function TopNav({ active, onUseCases }: { active: "workflows" | "personal
         cl1ck
       </Link>
       <nav className="hidden items-center gap-1 md:flex">
-        <Link href="/" className={tab(active === "workflows")}>
+        <Link href="/dashboard" className={tab(active === "workflows")}>
           Workflows
         </Link>
         <Link href="/personal" className={tab(active === "personal")}>
@@ -58,7 +59,7 @@ export function TopNav({ active, onUseCases }: { active: "workflows" | "personal
             Use cases
           </button>
         ) : (
-          <Link href="/" className={tab(false)}>
+          <Link href="/dashboard" className={tab(false)}>
             Use cases
           </Link>
         )}
@@ -159,11 +160,33 @@ export function Dashboard() {
           <UseCases />
         ) : (
           <>
+            <PageIntro title="Team dashboard">
+              <p>
+                This is what a finance manager sees: every repeated task cl1ck found across the team, how much time it
+                costs, and which ones are automated.
+              </p>
+            </PageIntro>
+
             <div className="flex flex-wrap items-center gap-1">
+              <span
+                className="mr-1 text-[11px] text-ash"
+                title="Layers zoom from one person up to the whole company. Each layer only sees patterns from the layer below."
+              >
+                Layers
+              </span>
               {LAYERS.map((l) => (
                 <button
                   key={l.id}
                   onClick={() => setLayer(l.id)}
+                  title={
+                    l.id === "me"
+                      ? "Your own repeats"
+                      : l.id === "ap"
+                        ? "Accounts Payable team"
+                        : l.id === "finance"
+                          ? "All finance teams"
+                          : "Whole company templates"
+                  }
                   className={cn(
                     "rounded-md px-2.5 py-1 text-xs transition-colors duration-300",
                     layer === l.id ? "bg-ink text-paper" : "text-ash hover:bg-paper hover:text-ink",
@@ -176,7 +199,7 @@ export function Dashboard() {
 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h1 className="text-[40px] leading-[1.05] text-ink">{layer === "me" ? "Your work" : LAYERS.find((l) => l.id === layer)!.name}</h1>
+                <h2 className="text-[28px] leading-[1.1] text-ink">{layer === "me" ? "Your work" : LAYERS.find((l) => l.id === layer)!.name}</h2>
                 <p className="mt-2 text-base text-ash">{LAYER_LINE[layer]}</p>
               </div>
               <div className="flex gap-2">

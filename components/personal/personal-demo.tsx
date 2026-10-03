@@ -9,6 +9,7 @@ import { DAYS, MACHINE, MEDIAN_HAND_SECONDS, RAN_DAYS } from "@/lib/personal/dat
 import { LIBRARY, PEOPLE, personById, workflowById, type PersonId } from "@/lib/personal/library";
 import { cn } from "@/lib/utils";
 import { Label, Stat, TextButton, useCountUp } from "../cl1ck/bits";
+import { PageIntro } from "@/components/page-intro";
 import { DesktopSim } from "./desktop-sim";
 import { LibrarySheet, TeamLibrary, ViewAsSwitcher, recordRun, useLibraryState } from "./library";
 import { Timeline } from "./timeline";
@@ -45,16 +46,18 @@ export function PersonalDemo({ repoPath }: { repoPath: string }) {
       </header>
 
       <main className="mx-auto max-w-[1200px] space-y-8 px-6 py-10">
-        <section className="space-y-2">
-          <Label>Personal → Platform team</Label>
-          <h1 className="text-[40px] leading-[1.05] text-ink">One person&apos;s routine, everyone&apos;s workflow</h1>
-        </section>
+        <PageIntro title="One person's routine, everyone's workflow">
+          <p>
+            cl1ck noticed a morning setup that ran on 9 of the last 10 workdays and saved it as a shareable workflow.
+            Watch it run in the browser, or download a script for Mac or Windows.
+          </p>
+        </PageIntro>
 
         {/* Discovery, compact */}
         <section className="rounded-2xl border border-hairline bg-paper p-5">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
             <div>
-              <Label>Found on this Mac</Label>
+              <Label>Found on this machine</Label>
               <div className="mt-1 text-sm text-ink">
                 {MACHINE.model} · {MACHINE.chip.split(" ·")[0]}
               </div>

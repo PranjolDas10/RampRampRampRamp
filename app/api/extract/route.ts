@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
+import { CLAUDE_MODEL } from "@/lib/claude";
 
 // Fallback reader for invoice layouts the learned rules don't recognize. Returns each field's
 // value plus the label printed before it, so the client can learn the label and never pay again.
@@ -29,6 +30,9 @@ const FIELD_NAMES = {
   amount: "Amount",
 } as const;
 
+// Public endpoint that spends the API key: cap the input so one request can't run up the bill.
+const Body = z.object({ lines: z.array(z.string().max(500)).min(1).max(200) });
+
 // Claude Opus 5.5 list prices, dollars per million tokens.
 const INPUT_PER_M = 4;
 const OUTPUT_PER_M = 20;
@@ -37,13 +41,14 @@ export async function POST(req: Request) {
   const apiKey = process.env.CLAUDE_API_KEY ?? process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return Response.json({ error: "No CLAUDE_API_KEY in .env" }, { status: 500 });
 
-  const { lines } = (await req.json()) as { lines?: string[] };
-  if (!Array.isArray(lines) || !lines.length) return Response.json({ error: "No document lines" }, { status: 400 });
+  const body = Body.safeParse(await req.json().catch(() => null));
+  if (!body.success) return Response.json({ error: "Expected 1-200 document lines of up to 500 characters" }, { status: 400 });
+  const { lines } = body.data;
 
   const client = new Anthropic({ apiKey });
   try {
     const response = await client.messages.parse({
-      model: "claude-opus-5-5",
+      model: CLAUDE_MODEL,
       max_tokens: 2000,
       output_config: { effort: "low", format: zodOutputFormat(ExtractSchema) },
       system:

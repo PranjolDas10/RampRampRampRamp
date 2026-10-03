@@ -3,7 +3,7 @@ import { Geist_Mono, Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-// DESIGN.md: lausanne at 400 only; Inter is the listed substitute.
+// docs/design.md: lausanne at 400 only; Inter is the listed substitute.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],

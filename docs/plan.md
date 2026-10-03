@@ -1,6 +1,6 @@
 # cl1ck: merged plan
 
-**Sources merged:** the planning thread (team layers, org tree, one-gap sharing, monitoring sources), `so_locked_in/workflow-auto-suggester.md`, and `DESIGN.md` (styling, low priority).
+**Sources merged:** the planning thread (team layers, org tree, one-gap sharing, monitoring sources), [`spec.md`](spec.md), and [`design.md`](design.md) (styling, low priority).
 
 **One line:** cl1ck watches how people work, finds the work a *team* repeats (including the private shortcuts people never share), and turns it into automations the whole group runs, up to the entire organization and never outside it.
 
@@ -45,7 +45,7 @@ Everything except the plain-English editor and unfamiliar-invoice reads is deter
 | Thresholds | 5 runs / 60 days / 90% | Demo needs it live | 5/60/90 in production, **2 in demo mode**. |
 | AI | NL builder uses an LLM | No credits at first | Deterministic core. **Claude only for NL edits and unfamiliar layouts**, a few cents each. |
 | Suggestion target | User-level | Team-level | **Team-first.** Personal patterns merge into the team's workflow; private shortcuts get promoted. |
-| Styling | DESIGN.md (light, chartreuse accent) | Dark, emerald accent | Low priority: re-skin if time allows. |
+| Styling | design.md (light, chartreuse accent) | Dark, emerald accent | Low priority: re-skin if time allows. |
 
 ## Real vs hardcoded in the demo
 
@@ -64,4 +64,4 @@ npm run dev           # http://localhost:3000 (dashboard), /ledgerline, /persona
 # .env needs CLAUDE_API_KEY for the two Claude features; everything else works without it
 ```
 
-See `DEMO.md` for the 90-second script.
+See [`demo.md`](demo.md) for the 90-second script.

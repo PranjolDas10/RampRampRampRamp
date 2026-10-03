@@ -1,6 +1,6 @@
 "use client";
 
-// Shared UI pieces, styled per DESIGN.md: bone canvas, white cards with hairline borders,
+// Shared UI pieces, styled per docs/design.md: bone canvas, white cards with hairline borders,
 // ink text at a single weight, and chartreuse only where money moves or something is live.
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";

@@ -182,7 +182,17 @@ function BillWorkflow({ pattern, group }: { pattern: PatternSummary; group: stri
         />
       </div>
 
-      <Block title="How the team does it">
+      <Block
+        title="How the team does it"
+        action={
+          <span
+            className="text-[11px] text-ash"
+            title="Side-by-side comparison of past runs. Matching fields across people is how cl1ck learns the shared rule (alignment)."
+          >
+            Alignment
+          </span>
+        }
+      >
         <div className="overflow-x-auto rounded-xl border border-hairline">
           <table className="w-full text-xs">
             <thead>

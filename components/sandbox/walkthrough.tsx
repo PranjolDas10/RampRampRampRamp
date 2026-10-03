@@ -4,8 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { TopNav } from "@/components/cl1ck/dashboard";
 import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PageIntro } from "@/components/page-intro";
 import { GhostButton, PrimaryButton } from "@/components/cl1ck/bits";
-import { buildSandbox, type Sandbox } from "./engine";
+import { buildSandbox, type Sandbox } from "@/lib/sandbox";
 import {
   CaptureStep,
   ClaudeStep,
@@ -70,8 +71,14 @@ export function Walkthrough() {
           </button>
         </div>
 
-        <h1 className="mt-8 text-[40px] leading-[1.05] text-ink">Sandbox</h1>
-        <p className="mt-2 text-base text-ash">The real engine on sample data. Nothing here touches the live demo.</p>
+        <div className="mt-8">
+          <PageIntro title="Sandbox">
+            <p>
+              Step through the real engine on fixed demo data — capture, tracing, clustering, dry run and guardrails.
+              Nothing here touches the live Ledgerline demo.
+            </p>
+          </PageIntro>
+        </div>
 
         <ol className="mt-8 flex flex-wrap gap-1.5">
           {STEPS.map((st, i) => (

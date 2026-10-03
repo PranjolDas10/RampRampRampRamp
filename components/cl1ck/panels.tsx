@@ -193,7 +193,18 @@ export function TeamMembers({ myRuns, myMedian }: { myRuns: number; myMedian: nu
 export function PersonalSetups() {
   const promoted = useStored(KEYS.promoted, NO_PROMOTED);
   return (
-    <Section title="Private shortcuts" desc="Faster methods people never shared.">
+    <Section
+      title="Private shortcuts"
+      desc="Faster methods people never shared."
+      action={
+        <span
+          className="text-[11px] text-ash"
+          title="Personal tricks (keyboard macros, copy-paste habits) that cl1ck noticed. Promote one and it becomes the team's workflow."
+        >
+          What is this?
+        </span>
+      }
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         {TEAM_MEMBERS.filter((m) => m.setup).map((m) => (
           <div key={m.id} className="rounded-xl bg-bone p-4 text-xs">

@@ -8,7 +8,7 @@ import { formatFor } from "@/lib/trace";
 import type { CapturedEvent, FieldRule, MergedRule } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Avatar, Label, Pill, SourceBadge } from "@/components/cl1ck/bits";
-import type { Sandbox } from "./engine";
+import type { Sandbox } from "@/lib/sandbox";
 
 // Counts 0 → max on an interval, restarting whenever the step remounts.
 function useTicker(max: number, ms: number) {

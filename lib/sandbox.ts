@@ -1,8 +1,8 @@
 // Runs the real cl1ck engine on in-memory data for the sandbox walkthrough.
 // Pure: builds events in memory and never writes to localStorage or the live demo state.
-import { guardrails, missingFields, proposalToBill, propose, REQUIRED_FIELDS, type Proposal } from "@/lib/automation";
-import { isoToMDY } from "@/lib/format";
-import { alignmentSimilarity, cluster, learnRules, mergeRules, segment } from "@/lib/miner";
+import { guardrails, missingFields, proposalToBill, propose, REQUIRED_FIELDS, type Proposal } from "./automation";
+import { isoToMDY } from "./format";
+import { alignmentSimilarity, cluster, learnRules, mergeRules, segment } from "./miner";
 import {
   ACCOUNT_OPTIONS,
   BILL_FORM_FIELDS,
@@ -15,9 +15,9 @@ import {
   invoiceTotal,
   makeEmailSnapshot,
   vendorById,
-} from "@/lib/seed";
-import { detectShape, extractByLabel, normalize, traceValue, type Seen } from "@/lib/trace";
-import type { CapturedEvent, Email, Episode, FieldRule, MergedRule, Shape, Trace } from "@/lib/types";
+} from "./seed";
+import { detectShape, extractByLabel, normalize, traceValue, type Seen } from "./trace";
+import type { CapturedEvent, Email, Episode, FieldRule, MergedRule, Shape, Trace } from "./types";
 
 const T0 = Date.UTC(2026, 9, 1, 15, 0); // fixed clock so the walkthrough is identical every time
 

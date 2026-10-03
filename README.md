@@ -7,7 +7,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-Built solo at the Ramp hackathon.
+Built by CCS team at the Ramp hackathon.
 
 <!-- Replace with a 30-60s recording of /ledgerline auto-filling a bill and blocking a duplicate. -->
 ![cl1ck demo](docs/media/demo.gif)

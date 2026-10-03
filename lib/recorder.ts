@@ -13,6 +13,13 @@ type Options = {
 
 const IGNORE = "[data-cl1ck]";
 
+// The recorder runs on apps we don't own, so it can't rely on them marking private fields.
+const SENSITIVE = /bank|iban|swift|routing|account\s*(no|num)|card|cvv|cvc|ssn|\bsin\b|tax\s*id|password|passcode|\bpin\b/i;
+
+export function isSensitive(label: string, autocomplete = "") {
+  return SENSITIVE.test(label) || /^cc-|password/.test(autocomplete);
+}
+
 function labelOf(el: HTMLElement) {
   const input = el as HTMLInputElement;
   const text =
@@ -73,6 +80,7 @@ export function startRecorder({ root, app, getRoute, emit }: Options) {
     if (!("value" in el)) return;
     if ((el as HTMLInputElement).type === "password" || el.dataset.usPrivate !== undefined) return;
     const label = labelOf(el);
+    if (isSensitive(`${label} ${el.getAttribute("name") ?? ""}`, el.getAttribute("autocomplete") ?? "")) return;
     const value = el instanceof HTMLSelectElement ? (el.selectedOptions[0]?.text ?? "") : el.value;
     if (!label || !value.trim()) return;
     const shape = detectShape(value, label);
@@ -84,7 +92,9 @@ export function startRecorder({ root, app, getRoute, emit }: Options) {
   };
 
   const onCopy = () => {
-    const text = clean(document.getSelection()?.toString() ?? "").slice(0, 80);
+    const selection = document.getSelection();
+    if (!selection?.anchorNode || !root.contains(selection.anchorNode)) return;
+    const text = clean(selection.toString()).slice(0, 80);
     if (text) send({ type: "copy", value: text, shape: detectShape(text) });
   };
 

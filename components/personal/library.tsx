@@ -53,7 +53,20 @@ export function recordRun(w: Workflow, p: PersonId) {
   update(PKEYS.runs, NO_PRUNS, (prev) => ({ ...prev, [`${w.id}:${p}`]: (prev[`${w.id}:${p}`] ?? 0) + 1 }));
 }
 
-export function downloadScript(w: Workflow, p: PersonId) {
+export function detectOs(): "mac" | "windows" | "other" {
+  if (typeof navigator === "undefined") return "other";
+  const ua = navigator.userAgent;
+  if (/Windows/i.test(ua)) return "windows";
+  if (/Mac OS X|Macintosh/i.test(ua)) return "mac";
+  return "other";
+}
+
+export function downloadScript(w: Workflow, p: PersonId, os: "mac" | "windows" = detectOs() === "windows" ? "windows" : "mac") {
+  if (os === "windows") {
+    downloadText(w.winFile, w.winScript(personById(p), personById(w.author)), "application/x-bat");
+    toast(`Downloaded ${w.winFile}`, { description: `Filled in for ${nameOf(p)} · double-click to run` });
+    return;
+  }
   downloadText(w.file, w.script(personById(p), personById(w.author)), "text/x-shellscript");
   toast(`Downloaded ${w.file}`, { description: `Filled in for ${nameOf(p)} · run: zsh ~/Downloads/${w.file}` });
 }
@@ -101,6 +114,8 @@ function WorkflowCard({
 }) {
   const s = useLibraryState();
   const [setup, setSetup] = useState(false);
+  const [realRun, setRealRun] = useState(false);
+  const os = detectOs();
   const runsHere = w.id === LOCAL_WORKFLOW_ID && viewer === "you";
   const author = personById(w.author);
   const mine = w.author === viewer;
@@ -149,71 +164,100 @@ function WorkflowCard({
         <TextButton onClick={onView}>
           <Eye className="size-3.5" /> View
         </TextButton>
-        <GhostButton onClick={() => downloadScript(w, viewer)}>
-          <Download className="size-3.5" /> Download
-        </GhostButton>
-        {runsHere ? (
-          <PrimaryButton
-            onClick={() => {
-              openLink(SHORTCUT_RUN_URL);
-              onRun();
-              toast(`Running “${SHORTCUT_NAME}”`, { description: "VS Code, Spotify, dev server, Ledgerline" });
-            }}
-          >
-            <Play className="size-3.5" /> Run on this Mac
-          </PrimaryButton>
-        ) : mine || installed ? (
-          <GhostButton onClick={onRun}>
-            <Play className="size-3.5" /> Run
-          </GhostButton>
-        ) : (
-          <PrimaryButton
+        {!mine && !installed ? (
+          <GhostButton
             onClick={() => {
               install(w, viewer);
               toast(`Installed for ${nameOf(viewer)}`, { description: `~/${v.repo}` });
-              onRun();
             }}
           >
             <Check className="size-3.5" /> Install for me
-          </PrimaryButton>
+          </GhostButton>
+        ) : null}
+        <PrimaryButton
+          onClick={() => {
+            if (!mine && !installed) install(w, viewer);
+            onRun();
+          }}
+        >
+          <Play className="size-3.5" /> Watch it run
+        </PrimaryButton>
+      </div>
+
+      <div className="mt-3 text-[11px] text-ash">
+        <button onClick={() => setRealRun((v) => !v)} className="underline hover:text-ink">
+          {realRun ? "Hide" : "Run it on my computer"}
+        </button>
+        {realRun && (
+          <div className="mt-2 space-y-2 rounded-md border border-hairline bg-bone px-3 py-2 text-ink">
+            <p>
+              Plain text — read it first. It only opens apps, folders and URLs, and starts your dev server.
+              {os === "windows" ? " Double-click the .cmd file." : os === "mac" ? " Run with zsh, or use Shortcuts below." : ""}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {(os === "windows" || os === "other") && (
+                <GhostButton onClick={() => downloadScript(w, viewer, "windows")}>
+                  <Download className="size-3.5" /> {w.winFile}
+                </GhostButton>
+              )}
+              {(os === "mac" || os === "other") && (
+                <GhostButton onClick={() => downloadScript(w, viewer, "mac")}>
+                  <Download className="size-3.5" /> {w.file}
+                </GhostButton>
+              )}
+            </div>
+            {runsHere && os === "mac" && (
+              <div>
+                <button onClick={() => setSetup((v) => !v)} className="underline hover:text-ink">
+                  {setup ? "Hide Shortcuts setup" : "One-click via macOS Shortcuts (1 min)"}
+                </button>
+                {setup && (
+                  <ol className="mt-2 space-y-1.5">
+                    <li className="flex items-center gap-2">
+                      <span className="text-ash">1</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(shortcutScript(repoPath));
+                          toast("Script copied");
+                        }}
+                        className="rounded-md bg-paper px-2 py-0.5 hover:bg-hairline"
+                      >
+                        Copy script
+                      </button>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-ash">2</span>
+                      <button onClick={() => openLink(SHORTCUT_CREATE_URL)} className="rounded-md bg-paper px-2 py-0.5 hover:bg-hairline">
+                        Open Shortcuts
+                      </button>
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-ash">3</span>
+                      <span>
+                        Add <b className="font-normal underline">Run AppleScript</b>, paste, name it “{SHORTCUT_NAME}”. Allow
+                        scripts in Shortcuts → Settings → Advanced.
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-ash">4</span>
+                      <button
+                        onClick={() => {
+                          openLink(SHORTCUT_RUN_URL);
+                          onRun();
+                          toast(`Running “${SHORTCUT_NAME}”`);
+                        }}
+                        className="rounded-md bg-paper px-2 py-0.5 hover:bg-hairline"
+                      >
+                        Run on this Mac
+                      </button>
+                    </li>
+                  </ol>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </div>
-      {runsHere && (
-        <div className="mt-3 text-[11px] text-ash">
-          <button onClick={() => setSetup((v) => !v)} className="underline hover:text-ink">
-            {setup ? "Hide setup" : "First time on this Mac? Set up (1 min)"}
-          </button>
-          {setup && (
-            <ol className="mt-2 space-y-1.5 text-ink">
-              <li className="flex items-center gap-2">
-                <span className="text-ash">1</span>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(shortcutScript(repoPath));
-                    toast("Script copied");
-                  }}
-                  className="rounded-md bg-bone px-2 py-0.5 hover:bg-hairline"
-                >
-                  Copy script
-                </button>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-ash">2</span>
-                <button onClick={() => openLink(SHORTCUT_CREATE_URL)} className="rounded-md bg-bone px-2 py-0.5 hover:bg-hairline">
-                  Open Shortcuts
-                </button>
-              </li>
-              <li className="flex gap-2">
-                <span className="text-ash">3</span>
-                <span>
-                  Add <b className="font-normal underline">Run AppleScript</b>, replace its text with the paste, name it “{SHORTCUT_NAME}”.
-                  Allow scripts in Shortcuts → Settings → Advanced.
-                </span>
-              </li>
-            </ol>
-          )}
-        </div>
-      )}
     </article>
   );
 }
@@ -321,9 +365,13 @@ function SheetBody({ w, viewer, onViewer, onRun }: { w: Workflow; viewer: Person
   const person = personById(viewer);
   const author = personById(w.author);
   const installed = s.isInstalled(w, viewer);
+  const os = detectOs();
   const files = [
+    { name: w.winFile, path: `Downloads\\${w.winFile}`, body: w.winScript(person, author) },
     { name: w.file, path: `~/Downloads/${w.file}`, body: w.script(person, author) },
-    { name: `com.cl1ck.${w.id}.plist`, path: `~/Library/LaunchAgents/com.cl1ck.${w.id}.plist`, body: launchdPlist(w, person) },
+    ...(os === "mac"
+      ? [{ name: `com.cl1ck.${w.id}.plist`, path: `~/Library/LaunchAgents/com.cl1ck.${w.id}.plist`, body: launchdPlist(w, person) }]
+      : []),
   ];
   return (
     <div className="space-y-6 pb-10">
@@ -385,14 +433,19 @@ function SheetBody({ w, viewer, onViewer, onRun }: { w: Workflow; viewer: Person
                 onRun();
               }}
             >
-              <Play className="size-3.5" /> {installed ? "Run for me" : "Install for me"}
+              <Play className="size-3.5" /> Watch it run
             </PrimaryButton>
-            <GhostButton onClick={() => downloadScript(w, viewer)}>
+            <GhostButton onClick={() => downloadScript(w, viewer, "windows")}>
+              <Download className="size-3.5" /> {w.winFile}
+            </GhostButton>
+            <GhostButton onClick={() => downloadScript(w, viewer, "mac")}>
               <Download className="size-3.5" /> {w.file}
             </GhostButton>
-            <TextButton onClick={() => downloadPlist(w, viewer)}>
-              <FileDown className="size-3.5" /> Trigger .plist
-            </TextButton>
+            {os === "mac" && (
+              <TextButton onClick={() => downloadPlist(w, viewer)}>
+                <FileDown className="size-3.5" /> Trigger .plist
+              </TextButton>
+            )}
           </div>
         </section>
 

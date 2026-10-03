@@ -21,9 +21,9 @@ export const PEOPLE: Person[] = [
     name: "You",
     initials: "YOU",
     values: {
-      repo: "Documents/GitHub/RampRampRampRamp",
-      folders: ["Documents/GitHub/RampRampRampRamp/so_locked_in"],
-      devCommand: ["pnpm", "dev"],
+      repo: "Documents/GitHub/cl1ck",
+      folders: ["Documents/GitHub/cl1ck/docs"],
+      devCommand: ["npm", "run", "dev"],
       port: 3000,
       tabs: ["https://github.com/pulls", "https://www.notion.so"],
       playlist: "Deep Focus",
@@ -82,6 +82,7 @@ export type Workflow = {
   id: string;
   name: string;
   file: string;
+  winFile: string;
   author: PersonId;
   version: string;
   updated: string;
@@ -91,6 +92,7 @@ export type Workflow = {
   steps: { text: string; wait?: boolean }[];
   placeholders: { key: string; label: string; value: (v: Values) => string }[];
   script: (p: Person, author: Person) => string;
+  winScript: (p: Person, author: Person) => string;
   sim: (p: Person) => { kind: SimKind; label: string; detail: string; at: number }[];
 };
 
@@ -98,6 +100,10 @@ const q = (s: string) => `"${s.replace(/(["\\$`])/g, "\\$1")}"`;
 const home = (rel: string) => `"$HOME/${rel.replace(/(["\\$`])/g, "\\$1")}"`;
 const clock = ([h, m]: [number, number]) => `${h}:${String(m).padStart(2, "0")}`;
 
+// cmd.exe: % must be doubled; " inside a quoted string becomes "".
+const wQ = (s: string) => `"${s.replace(/%/g, "%%").replace(/"/g, '""')}"`;
+const wHome = (rel: string) => `%USERPROFILE%\\${rel.replace(/\//g, "\\")}`;
+const wEsc = (s: string) => s.replace(/%/g, "%%").replace(/([&^|<>"])/g, "^$1");
 function header(w: { name: string; version: string; file: string }, p: Person, author: Person, what: string[]) {
   const filledFor = p.id === "you" ? "you" : p.name;
   const by = author.id === "you" ? "you" : author.name;
@@ -220,9 +226,129 @@ const debugStagingScript = (w: Pick<Workflow, "name" | "version" | "file">) => (
   ].join("\n");
 };
 
-const W1 = { name: "Start my workday", version: "1.2", file: "start-workday.command" };
-const W2 = { name: "PR review kickoff", version: "2.0", file: "pr-review-kickoff.command" };
-const W3 = { name: "Debug staging", version: "1.0", file: "debug-staging.command" };
+function winHeader(w: { name: string; version: string; winFile: string }, p: Person, author: Person, what: string[]) {
+  const filledFor = p.id === "you" ? "you" : p.name;
+  const by = author.id === "you" ? "you" : author.name;
+  return [
+    "@echo off",
+    "setlocal EnableExtensions",
+    "REM ─────────────────────────────────────────────────────────────────────",
+    `REM ${w.name} · v${w.version} · Platform team library, Juniper Coffee Roasters`,
+    `REM Author: ${by} · Filled in for: ${filledFor}`,
+    "REM Made by cl1ck from the author's own routine, then shared with the team.",
+    "REM",
+    "REM What it does, in order:",
+    ...what.map((line, i) => `REM   ${i + 1}. ${line}`),
+    "REM",
+    "REM Safe by design: no admin, no deletes, no installs. It only opens apps,",
+    "REM folders and URLs, and starts your dev server.",
+    "REM",
+    `REM Run it: double-click ${w.winFile}, or:  ${w.winFile}`,
+    "REM ─────────────────────────────────────────────────────────────────────",
+    "",
+  ];
+}
+
+const startWorkdayWin = (w: Pick<Workflow, "name" | "version" | "winFile">) => (p: Person, author: Person) => {
+  const v = p.values;
+  const url = `http://localhost:${v.port}`;
+  const folders = v.folders.map((f) => wHome(f));
+  return [
+    ...winHeader(w, p, author, [
+      "Opens your repo and extra folders in VS Code",
+      "Starts your dev server and waits until it answers",
+      "Opens your browser tabs (only after the server is up)",
+      v.playlist ? "Starts your focus music in Spotify" : "Skips music (none set)",
+    ]),
+    "REM ── Your values (cl1ck filled these in; edit freely) ──",
+    `set "REPO=${wHome(v.repo)}"`,
+    `set "DEV_URL=${url}"`,
+    `set "PLAYLIST=${wEsc(v.playlist)}"`,
+    `set "DEV_CMD=${wEsc(v.devCommand.join(" "))}"`,
+    "",
+    'if not exist "%REPO%" (',
+    '  echo Repo not found: %REPO%. Edit REPO at the top of this file.',
+    "  pause",
+    "  exit /b 1",
+    ")",
+    "",
+    "REM 1. Editor",
+    'start "" code "%REPO%"',
+    ...folders.flatMap((f) => [`if exist "${f}" start "" code "${f}"`]),
+    "",
+    "REM 2. Dev server in a minimized window",
+    'start "cl1ck-dev" /min cmd /c "cd /d "%REPO%" && %DEV_CMD% > %TEMP%\\cl1ck-dev.log 2>&1"',
+    "",
+    "REM 3. Wait up to 60s for localhost",
+    "set /a tries=0",
+    ":waitloop",
+    "set /a tries+=1",
+    'curl -s -o nul --max-time 1 "%DEV_URL%" >nul 2>&1 && goto :ready',
+    "if %tries% geq 60 goto :ready",
+    "timeout /t 1 /nobreak >nul",
+    "goto :waitloop",
+    ":ready",
+    "",
+    "REM 4. Browser tabs",
+    `start "" ${wQ(url)}`,
+    ...v.tabs.map((t) => `start "" ${wQ(t)}`),
+    "",
+    "REM 5. Focus music",
+    v.playlist
+      ? `start "" "spotify:search:${encodeURIComponent(v.playlist).replace(/%/g, "%%")}"`
+      : "REM (no playlist set)",
+    "",
+    "echo Workspace ready.",
+    "",
+  ].join("\r\n");
+};
+
+const prReviewWin = (w: Pick<Workflow, "name" | "version" | "winFile">) => (p: Person, author: Person) => {
+  const v = p.values;
+  const tracker = v.tabs.find((t) => /linear|notion|figma/.test(t)) ?? "https://linear.app";
+  return [
+    ...winHeader(w, p, author, [
+      "Opens your GitHub review queue",
+      "Opens your repo in VS Code",
+      "Starts the test watcher in a new window",
+      "Opens your ticket tracker next to the PR",
+    ]),
+    `set "REPO=${wHome(v.repo)}"`,
+    `set "TRACKER=${wEsc(tracker)}"`,
+    `set "PKG=${wEsc(v.devCommand[0])}"`,
+    "",
+    'start "" "https://github.com/pulls/review-requested"',
+    'start "" code "%REPO%"',
+    'start "cl1ck-tests" cmd /k "cd /d "%REPO%" && %PKG% test --watch"',
+    'start "" "%TRACKER%"',
+    "echo Review setup ready.",
+    "",
+  ].join("\r\n");
+};
+
+const debugStagingWin = (w: Pick<Workflow, "name" | "version" | "winFile">) => (p: Person, author: Person) => {
+  const v = p.values;
+  return [
+    ...winHeader(w, p, author, [
+      "Opens the staging dashboard and logs",
+      "Opens your repo in VS Code",
+      "Starts your dev server pointed at staging",
+    ]),
+    `set "REPO=${wHome(v.repo)}"`,
+    `set "DEV_CMD=${wEsc(v.devCommand.join(" "))}"`,
+    "",
+    'start "" "https://staging.juniper.example/status"',
+    'start "" "https://staging.juniper.example/logs"',
+    'start "" code "%REPO%"',
+    'start "cl1ck-staging" /min cmd /c "cd /d "%REPO%" && set APP_ENV=staging&& %DEV_CMD% > %TEMP%\\cl1ck-staging.log 2>&1"',
+    "echo Staging debug setup ready.",
+    "",
+  ].join("\r\n");
+};
+
+const W1 = { name: "Start my workday", version: "1.2", file: "start-workday.command", winFile: "start-workday.cmd" };
+const W2 = { name: "PR review kickoff", version: "2.0", file: "pr-review-kickoff.command", winFile: "pr-review-kickoff.cmd" };
+const W3 = { name: "Debug staging", version: "1.0", file: "debug-staging.command", winFile: "debug-staging.cmd" };
 
 export const LIBRARY: Workflow[] = [
   {
@@ -249,6 +375,7 @@ export const LIBRARY: Workflow[] = [
       { key: "{{focus_playlist}}", label: "Playlist", value: (v) => v.playlist || "(none)" },
     ],
     script: startWorkdayScript(W1),
+    winScript: startWorkdayWin(W1),
     sim: (p) => {
       const v = p.values;
       return [
@@ -281,6 +408,7 @@ export const LIBRARY: Workflow[] = [
       { key: "{{tracker_url}}", label: "Tracker", value: (v) => (v.tabs.find((t) => /linear|notion|figma/.test(t)) ?? "linear.app").replace("https://", "") },
     ],
     script: prReviewScript(W2),
+    winScript: prReviewWin(W2),
     sim: (p) => [
       { kind: "trigger", label: "Review requested", detail: "PR #412 · ledgerline-api", at: 0 },
       { kind: "browser", label: "GitHub", detail: "review queue", at: 1.2 },
@@ -307,6 +435,7 @@ export const LIBRARY: Workflow[] = [
       { key: "{{dev_command}}", label: "Dev command", value: (v) => v.devCommand.join(" ") },
     ],
     script: debugStagingScript(W3),
+    winScript: debugStagingWin(W3),
     sim: (p) => [
       { kind: "trigger", label: "#incidents mention", detail: "payments latency", at: 0 },
       { kind: "browser", label: "Staging status + logs", detail: "2 tabs", at: 1.1 },
